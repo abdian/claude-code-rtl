@@ -1,0 +1,9 @@
+# Shell scripts must stay LF or bash on macOS/Linux fails with "bad interpreter".
+*.sh        text eol=lf
+*.command   text eol=lf
+# Windows batch stays CRLF.
+*.cmd       text eol=crlf
+# Fonts are binary.
+*.ttf       binary
+*.otf       binary
+*.woff2     binary

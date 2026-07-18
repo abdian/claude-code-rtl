@@ -1,0 +1,12 @@
+# local font choice (generated at runtime)
+scripts/claude-rtl.conf
+
+# proprietary fonts — never commit these to a public repo (licensing).
+# Vazir (OFL) is shipped. Drop your own licensed copies here if you use them:
+fonts/YekanBakh-*.ttf
+fonts/IRANSans-*.ttf
+fonts/IRANYekan-*.ttf
+
+# OS cruft
+.DS_Store
+Thumbs.db
