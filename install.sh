@@ -57,10 +57,11 @@ EOF
     launchctl unload "$P" 2>/dev/null || true; launchctl load "$P" 2>/dev/null || true ;;
   Linux)
     D="$HOME/.config/autostart/claude-code-rtl.desktop"; mkdir -p "$(dirname "$D")"
-    printf '[Desktop Entry]\nType=Application\nName=Claude Code RTL\nExec=bash %s\nX-GNOME-Autostart-enabled=true\n' "$CORE" > "$D" ;;
-  *)  # Git-Bash on Windows
+    printf '[Desktop Entry]\nType=Application\nName=Claude Code RTL\nExec=bash "%s"\nX-GNOME-Autostart-enabled=true\n' "$CORE" > "$D" ;;
+  *)  # Git-Bash on Windows — detect the real bash.exe instead of hardcoding Program Files
     S="$HOME/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/ClaudeCodeRTL.vbs"; mkdir -p "$(dirname "$S")"
-    printf 'Set sh=CreateObject("WScript.Shell")\r\nsh.Run """C:\\Program Files\\Git\\bin\\bash.exe"" -lc ""%s""",0,False\r\n' "'$CORE'" > "$S" ;;
+    BW="$(cygpath -w "$(command -v bash)" 2>/dev/null || echo 'C:\Program Files\Git\bin\bash.exe')"
+    printf 'Set sh=CreateObject("WScript.Shell")\r\nsh.Run """%s"" -lc ""%s""",0,False\r\n' "$BW" "'$CORE'" > "$S" ;;
 esac
 
 echo

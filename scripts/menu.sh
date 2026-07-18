@@ -132,10 +132,12 @@ enable_startup() {
   case "$OS" in
     win)  # hidden .vbs in the Startup folder — runs at logon, no admin (unlike a Scheduled Task)
       mkdir -p "$(dirname "$WIN_STARTUP")"
+      # find the real bash.exe wherever Git is installed (don't hardcode Program Files)
+      local BASH_WIN; BASH_WIN="$(cygpath -w "$(command -v bash)" 2>/dev/null || echo 'C:\Program Files\Git\bin\bash.exe')"
       cat > "$WIN_STARTUP" <<EOF
 ' Claude Code RTL: silently re-apply at every Windows logon.
 Set sh = CreateObject("WScript.Shell")
-sh.Run """C:\\Program Files\\Git\\bin\\bash.exe"" -lc ""'$CORE'""", 0, False
+sh.Run """$BASH_WIN"" -lc ""'$CORE'""", 0, False
 EOF
       ;;
     mac)  # LaunchAgent with RunAtLoad — runs at each login
@@ -158,7 +160,7 @@ EOF
 [Desktop Entry]
 Type=Application
 Name=Claude Code RTL
-Exec=bash $CORE
+Exec=bash "$CORE"
 X-GNOME-Autostart-enabled=true
 EOF
       ;;
