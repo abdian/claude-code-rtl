@@ -139,15 +139,15 @@ irm https://raw.githubusercontent.com/abdian/claude-code-rtl/main/uninstall.ps1 
 
 ## اعمالِ خودکار بعد از آپدیت
 
-وقتی Claude Code آپدیت می‌شود، VSCode آن را در یک **پوشه‌ی جدید** نصب می‌کند و patch از بین می‌رود. نصبِ تک‌خطی **خودش این را روشن می‌کند** — یک هوکِ مخصوصِ هر سیستم‌عامل که در هر ورود، بی‌صدا دوباره اعمال می‌کند:
+وقتی Claude Code آپدیت می‌شود، VSCode آن را در یک **پوشه‌ی جدید** نصب می‌کند و patch از بین می‌رود. نصب‌کننده auto-apply را طوری می‌گذارد که **هم موقعِ لاگین و هم وقتی افزونه عوض شود** دوباره اعمال کند — پس RTL خودش برمی‌گردد، بدونِ reinstall:
 
-| سیستم‌عامل | محل |
-|---|---|
-| ویندوز | `Start Menu\Programs\Startup\ClaudeCodeRTL.vbs` |
-| مک | `~/Library/LaunchAgents/com.claude-code-rtl.plist` |
-| لینوکس | `~/.config/autostart/claude-code-rtl.desktop` |
+| سیستم‌عامل | موقعِ لاگین | وقتی افزونه آپدیت شود |
+|---|---|---|
+| مک | LaunchAgent `RunAtLoad` | launchd `WatchPaths` (آنی) |
+| ویندوز | Startup `.vbs` | Scheduled Task هر ۱۰ دقیقه |
+| لینوکس | autostart `.desktop` | systemd user `path` unit (آنی) |
 
-هیچ‌کدام به دسترسیِ admin/root نیاز ندارند. بعد از آپدیت فقط یک‌بار **Reload Window** بزن.
+هیچ‌کدام به admin/root نیاز ندارند. وقتی خودِ افزونه آپدیت می‌شود، VSCode یک‌بار ازت می‌خواهد reload کنی — تا آن لحظه patch دوباره نشسته، پس RTL سرجاش است.
 
 </div>
 

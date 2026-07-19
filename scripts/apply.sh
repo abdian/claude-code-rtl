@@ -130,9 +130,11 @@ for ROOT_EXT in "${EXT_ROOTS[@]}"; do
       [ -n "$FACE" ] && printf '%s\n' "$FACE"
       # font on the whole panel (font only — never flips the UI layout)
       printf 'body,#root{font-family:%s;}\n' "$FAMILY_STACK"
-      # RTL on message TEXT elements only
-      printf '[data-testid="assistant-message"] :is(p,li,ul,ol,h1,h2,h3,h4,h5,h6,blockquote,table){direction:rtl;text-align:right;line-height:1.9;}\n'
-      printf '[data-testid="assistant-message"] :is(ul,ol){padding-right:1.5em;padding-left:0;}\n'
+      # AUTO-direction on message TEXT: a Persian paragraph flips RTL, an English/code
+      # one stays LTR — per paragraph, from its own content (like dir="auto").
+      printf '[data-testid="assistant-message"] :is(p,li,ul,ol,h1,h2,h3,h4,h5,h6,blockquote,table){unicode-bidi:plaintext;text-align:start;line-height:1.9;}\n'
+      # logical padding so list bullets indent on the correct side per direction
+      printf '[data-testid="assistant-message"] :is(ul,ol){padding-inline-start:1.5em;padding-inline-end:0;}\n'
       # keep code / diffs / editors LTR so they never render blank
       printf '[data-testid="assistant-message"] :is(pre,code,.monaco-editor,[class*="diff"]){direction:ltr;text-align:left;unicode-bidi:isolate;}\n'
       # the prompt box is two layers: the contenteditable holds only the (transparent)
@@ -145,8 +147,8 @@ for ROOT_EXT in "${EXT_ROOTS[@]}"; do
       printf '[class*="permissionRequestContainer"],[class*="permissionRequestContent"]{direction:rtl;}\n'
       printf '[class*="permissionRequestContent"]{text-align:right;}\n'
       printf '[class*="permissionRequest"] :is(pre,code,.monaco-editor,[class*="diff"]){direction:ltr;text-align:left;unicode-bidi:isolate;}\n'
-      # your own sent messages -> RTL (code inside stays LTR)
-      printf '[class*="userMessageContainer"]{direction:rtl;text-align:right;}\n'
+      # your own sent messages -> AUTO-direction too (code inside stays LTR)
+      printf '[class*="userMessageContainer"]{unicode-bidi:plaintext;text-align:start;}\n'
       printf '[class*="userMessageContainer"] :is(pre,code,.monaco-editor,[class*="diff"]){direction:ltr;text-align:left;unicode-bidi:isolate;}\n'
       # todo lists (and similar <ul><li> widgets) are usually English — give them
       # auto-direction instead of hard RTL: English stays LTR, Persian still flips.

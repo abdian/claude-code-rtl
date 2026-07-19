@@ -19,14 +19,14 @@ $block = @'
 /* claude-code-rtl start */
 @font-face{font-family:"ClaudeCodeRTL";src:url("./ccrtl-font-regular.ttf") format("truetype");font-weight:100 900;font-style:normal;font-display:swap;}
 body,#root{font-family:"ClaudeCodeRTL","Vazir","Segoe UI",Tahoma,sans-serif;}
-[data-testid="assistant-message"] :is(p,li,ul,ol,h1,h2,h3,h4,h5,h6,blockquote,table){direction:rtl;text-align:right;line-height:1.9;}
-[data-testid="assistant-message"] :is(ul,ol){padding-right:1.5em;padding-left:0;}
+[data-testid="assistant-message"] :is(p,li,ul,ol,h1,h2,h3,h4,h5,h6,blockquote,table){unicode-bidi:plaintext;text-align:start;line-height:1.9;}
+[data-testid="assistant-message"] :is(ul,ol){padding-inline-start:1.5em;padding-inline-end:0;}
 [data-testid="assistant-message"] :is(pre,code,.monaco-editor,[class*="diff"]){direction:ltr;text-align:left;unicode-bidi:isolate;}
 [aria-label="Message input"],[class*="mentionMirror"]{unicode-bidi:plaintext;text-align:start;padding-left:14px;padding-right:36px;}
 [class*="permissionRequestContainer"],[class*="permissionRequestContent"]{direction:rtl;}
 [class*="permissionRequestContent"]{text-align:right;}
 [class*="permissionRequest"] :is(pre,code,.monaco-editor,[class*="diff"]){direction:ltr;text-align:left;unicode-bidi:isolate;}
-[class*="userMessageContainer"]{direction:rtl;text-align:right;}
+[class*="userMessageContainer"]{unicode-bidi:plaintext;text-align:start;}
 [class*="userMessageContainer"] :is(pre,code,.monaco-editor,[class*="diff"]){direction:ltr;text-align:left;unicode-bidi:isolate;}
 [data-testid="assistant-message"] :is([class*="todoList"],[class*="todoItem"]){direction:ltr;text-align:start;unicode-bidi:plaintext;}
 /* claude-code-rtl end */

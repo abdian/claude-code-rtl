@@ -52,12 +52,22 @@ case "$(uname -s 2>/dev/null)" in
  <key>Label</key><string>com.claude-code-rtl</string>
  <key>ProgramArguments</key><array><string>/bin/bash</string><string>$CORE</string></array>
  <key>RunAtLoad</key><true/>
+ <key>WatchPaths</key><array><string>$HOME/.vscode/extensions</string></array>
 </dict></plist>
 EOF
     launchctl unload "$P" 2>/dev/null || true; launchctl load "$P" 2>/dev/null || true ;;
   Linux)
+    # login autostart (works everywhere)
     D="$HOME/.config/autostart/claude-code-rtl.desktop"; mkdir -p "$(dirname "$D")"
-    printf '[Desktop Entry]\nType=Application\nName=Claude Code RTL\nExec=bash "%s"\nX-GNOME-Autostart-enabled=true\n' "$CORE" > "$D" ;;
+    printf '[Desktop Entry]\nType=Application\nName=Claude Code RTL\nExec=bash "%s"\nX-GNOME-Autostart-enabled=true\n' "$CORE" > "$D"
+    # plus a systemd user path-unit so it re-applies the instant the extensions dir changes
+    if command -v systemctl >/dev/null 2>&1; then
+      U="$HOME/.config/systemd/user"; mkdir -p "$U"
+      printf '[Unit]\nDescription=Claude Code RTL re-apply\n[Service]\nType=oneshot\nExecStart=/bin/bash %s\n' "$CORE" > "$U/claude-code-rtl.service"
+      printf '[Unit]\nDescription=Watch VSCode extensions for Claude Code updates\n[Path]\nPathModified=%s/.vscode/extensions\n[Install]\nWantedBy=default.target\n' "$HOME" > "$U/claude-code-rtl.path"
+      systemctl --user daemon-reload 2>/dev/null || true
+      systemctl --user enable --now claude-code-rtl.path 2>/dev/null || true
+    fi ;;
   *)  # Git-Bash on Windows — detect the real bash.exe instead of hardcoding Program Files
     S="$HOME/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/ClaudeCodeRTL.vbs"; mkdir -p "$(dirname "$S")"
     BW="$(cygpath -w "$(command -v bash)" 2>/dev/null || echo 'C:\Program Files\Git\bin\bash.exe')"

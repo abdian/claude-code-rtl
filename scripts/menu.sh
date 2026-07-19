@@ -130,7 +130,7 @@ choose_font() {
 # [3] Install the login hook so the patch survives Claude Code updates.
 enable_startup() {
   case "$OS" in
-    win)  # hidden .vbs in the Startup folder — runs at logon, no admin (unlike a Scheduled Task)
+    win)  # logon: hidden .vbs in the Startup folder (no admin)
       mkdir -p "$(dirname "$WIN_STARTUP")"
       # find the real bash.exe wherever Git is installed (don't hardcode Program Files)
       local BASH_WIN; BASH_WIN="$(cygpath -w "$(command -v bash)" 2>/dev/null || echo 'C:\Program Files\Git\bin\bash.exe')"
@@ -139,8 +139,11 @@ enable_startup() {
 Set sh = CreateObject("WScript.Shell")
 sh.Run """$BASH_WIN"" -lc ""'$CORE'""", 0, False
 EOF
+      # mid-session updates: a scheduled task every 10 min (MINUTE needs no admin; ONLOGON does)
+      local VBS_WIN; VBS_WIN="$(cygpath -w "$WIN_STARTUP" 2>/dev/null)"
+      MSYS_NO_PATHCONV=1 schtasks /Create /TN "ClaudeCodeRTL" /TR "wscript.exe \"$VBS_WIN\"" /SC MINUTE /MO 10 /F >/dev/null 2>&1 || true
       ;;
-    mac)  # LaunchAgent with RunAtLoad — runs at each login
+    mac)  # LaunchAgent: run at login AND whenever the extensions folder changes (updates)
       mkdir -p "$HOME/Library/LaunchAgents"
       cat > "$MAC_PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -150,11 +153,12 @@ EOF
   <key>ProgramArguments</key>
   <array><string>/bin/bash</string><string>$CORE</string></array>
   <key>RunAtLoad</key><true/>
+  <key>WatchPaths</key><array><string>$HOME/.vscode/extensions</string></array>
 </dict></plist>
 EOF
       launchctl unload "$MAC_PLIST" 2>/dev/null || true
       launchctl load "$MAC_PLIST" 2>/dev/null || true ;;
-    linux)  # freedesktop autostart entry
+    linux)  # login: freedesktop autostart entry (works everywhere)
       mkdir -p "$HOME/.config/autostart"
       cat > "$LINUX_DESKTOP" <<EOF
 [Desktop Entry]
@@ -163,6 +167,14 @@ Name=Claude Code RTL
 Exec=bash "$CORE"
 X-GNOME-Autostart-enabled=true
 EOF
+      # mid-session updates: systemd user path-unit that fires when the extensions dir changes
+      if command -v systemctl >/dev/null 2>&1; then
+        mkdir -p "$HOME/.config/systemd/user"
+        printf '[Unit]\nDescription=Claude Code RTL re-apply\n[Service]\nType=oneshot\nExecStart=/bin/bash %s\n' "$CORE" > "$HOME/.config/systemd/user/claude-code-rtl.service"
+        printf '[Unit]\nDescription=Watch VSCode extensions for Claude Code updates\n[Path]\nPathModified=%s/.vscode/extensions\n[Install]\nWantedBy=default.target\n' "$HOME" > "$HOME/.config/systemd/user/claude-code-rtl.path"
+        systemctl --user daemon-reload 2>/dev/null || true
+        systemctl --user enable --now claude-code-rtl.path 2>/dev/null || true
+      fi
       ;;
   esac
   printf "   ${GREEN}✔ auto-apply enabled${R}\n"
@@ -171,9 +183,11 @@ EOF
 # Remove the login hook (the current patch stays; it just won't re-apply).
 disable_startup() {
   case "$OS" in
-    win)   rm -f "$WIN_STARTUP" ;;
+    win)   rm -f "$WIN_STARTUP"; MSYS_NO_PATHCONV=1 schtasks /Delete /TN "ClaudeCodeRTL" /F >/dev/null 2>&1 || true ;;
     mac)   launchctl unload "$MAC_PLIST" 2>/dev/null || true; rm -f "$MAC_PLIST" ;;
-    linux) rm -f "$LINUX_DESKTOP" ;;
+    linux) rm -f "$LINUX_DESKTOP"
+           if command -v systemctl >/dev/null 2>&1; then systemctl --user disable --now claude-code-rtl.path 2>/dev/null || true; fi
+           rm -f "$HOME/.config/systemd/user/claude-code-rtl.path" "$HOME/.config/systemd/user/claude-code-rtl.service" ;;
   esac
   printf "   ${GRAY}○ auto-apply disabled${R}\n"
 }

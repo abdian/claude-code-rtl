@@ -30,11 +30,16 @@ Invoke-WebRequest "$raw/fonts/Vazir-Variable.ttf" -OutFile (Join-Path $root 'Vaz
 $applyPath = Join-Path $root 'apply.ps1'
 powershell -NoProfile -ExecutionPolicy Bypass -File $applyPath
 
-# 4) auto-apply at every logon (hidden window, no admin)
+# 4a) re-apply at every logon (hidden window, no admin)
 $vbs = Join-Path ([Environment]::GetFolderPath('Startup')) 'ClaudeCodeRTL.vbs'
 $vbsBody = 'Set sh=CreateObject("WScript.Shell")' + "`r`n" +
            'sh.Run "powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""' + $applyPath + '""",0,False'
 Set-Content -LiteralPath $vbs -Value $vbsBody -Encoding ASCII
+
+# 4b) also re-apply every 10 min so a MID-SESSION extension update is caught (no admin;
+#     ONLOGON needs admin but MINUTE does not). This is the Windows analog of the mac WatchPaths.
+$taskCmd = 'powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $applyPath + '"'
+schtasks /Create /TN 'ClaudeCodeRTL' /TR $taskCmd /SC MINUTE /MO 10 /F 2>$null | Out-Null
 
 Write-Host ''
 Write-Host 'OK  Installed. Claude Code chat is now right-to-left.' -ForegroundColor Green

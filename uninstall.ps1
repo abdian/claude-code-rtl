@@ -22,6 +22,7 @@ Get-ChildItem $extDir -Directory -Filter 'anthropic.claude-code-*' | ForEach-Obj
 }
 
 Remove-Item (Join-Path ([Environment]::GetFolderPath('Startup')) 'ClaudeCodeRTL.vbs') -Force -ErrorAction SilentlyContinue
+schtasks /Delete /TN 'ClaudeCodeRTL' /F 2>$null | Out-Null
 Remove-Item (Join-Path $env:LOCALAPPDATA 'ClaudeCodeRTL') -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host 'OK  Removed. Reload VSCode to see the original chat.' -ForegroundColor Green

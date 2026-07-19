@@ -106,16 +106,17 @@ menu‑less by design — just re‑run the install/uninstall commands above.)_
 ## Auto‑apply after updates
 
 When Claude Code updates, VSCode installs it into a **new folder** and the patch is
-gone. The one‑line install **turns this on for you** — a per‑OS hook that silently
-re‑applies at each login:
+gone. The installer sets up auto‑apply that re‑applies **both at login and when the
+extension changes** — so RTL comes back on its own, no reinstall:
 
-| OS      | Where                                                            |
-|---------|-----------------------------------------------------------------|
-| Windows | `Start Menu\Programs\Startup\ClaudeCodeRTL.vbs`                  |
-| macOS   | `~/Library/LaunchAgents/com.claude-code-rtl.plist`              |
-| Linux   | `~/.config/autostart/claude-code-rtl.desktop`                   |
+| OS      | At login              | When the extension updates          |
+|---------|-----------------------|-------------------------------------|
+| macOS   | LaunchAgent `RunAtLoad` | launchd `WatchPaths` (instant)    |
+| Windows | Startup `.vbs`        | scheduled task every 10 min         |
+| Linux   | autostart `.desktop`  | systemd user `path` unit (instant)  |
 
-None require admin/root. After an update you still press **Reload Window** once.
+None require admin/root. When the extension itself updates, VSCode asks you to reload
+once — by then the patch is already back in place, so RTL is there.
 
 ---
 
